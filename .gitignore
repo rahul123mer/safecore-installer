@@ -1,0 +1,8 @@
+# Rebuilt by ./build-dmg.sh (contains a 500 MB unpacked copy of the developer's package)
+build/
+installer-app/.build/
+# Python tool environment, recreated automatically by build-dmg.sh
+.venv-dmgbuild/
+# DMGs are over GitHub's 100 MB file limit; they are attached to GitHub Releases instead
+dist/**/*.dmg
+.DS_Store

@@ -1,0 +1,434 @@
+<title>SafeCore Installer Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column for the plan, widened bands for the UI mockups (macOS windows drawn in CSS). */
+:root{
+  /* SafeSpace brand tokens, taken from safespaceglobal.ai (Elementor kit) */
+  --navy:#081F5C; --navy-deep:#05162B; --cyan:#23BFFE; --blue:#2387F7; --ice:#9EECFA;
+  --bg:#F6F8FC; --surface:#FFFFFF; --fg:#0B1A3A; --muted:#55627E; --line:#DCE3EF;
+  --accent:#1B6FE0; --accent-soft:#E7F1FE; --ok:#14866D; --ok-soft:#E3F5EF; --warn:#A35F00; --warn-soft:#FFF2DC;
+  --code-bg:#EEF2F9; --win-bg:#FFFFFF; --win-bar:#ECEEF2; --win-line:#D9DDE5; --win-fg:#1D1D1F; --win-muted:#6E6E73; --field:#F5F6F8;
+  --logo-filter:none;
+  --f-display:"Figtree","Proxima Nova",system-ui,sans-serif;
+  --f-body:"Figtree","Proxima Nova",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --f-mac:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#05162B; --surface:#0B2142; --fg:#E8EEF8; --muted:#9FB0CB; --line:#1D3557;
+  --accent:#54A7FF; --accent-soft:#0F2E57; --ok:#4FD1A5; --ok-soft:#0E3A33; --warn:#FFB547; --warn-soft:#3A2A0E;
+  --code-bg:#0A1C38; --win-bg:#1E1E20; --win-bar:#2A2A2D; --win-line:#3A3A3E; --win-fg:#F2F2F4; --win-muted:#A1A1A6; --field:#2C2C30;
+  --logo-filter:brightness(0) invert(1); color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#05162B; --surface:#0B2142; --fg:#E8EEF8; --muted:#9FB0CB; --line:#1D3557;
+  --accent:#54A7FF; --accent-soft:#0F2E57; --ok:#4FD1A5; --ok-soft:#0E3A33; --warn:#FFB547; --warn-soft:#3A2A0E;
+  --code-bg:#0A1C38; --win-bg:#1E1E20; --win-bar:#2A2A2D; --win-line:#3A3A3E; --win-fg:#F2F2F4; --win-muted:#A1A1A6; --field:#2C2C30;
+  --logo-filter:brightness(0) invert(1); color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 72px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+.col{max-width:760px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:clamp(30px,5vw,44px);font-weight:800;letter-spacing:-.02em}
+h2{font-size:26px;font-weight:800;letter-spacing:-.01em}
+h3{font-size:17px;font-weight:700}
+p{margin:0}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:18px;color:var(--muted);max-width:65ch}
+code,.mono{font-family:var(--f-mono);font-size:.86em}
+code{background:var(--code-bg);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+section{display:flex;flex-direction:column;gap:20px}
+.sec-head{display:flex;flex-direction:column;gap:8px;max-width:760px}
+.sec-head p{color:var(--muted)}
+
+/* header */
+header{display:flex;flex-direction:column;gap:22px}
+.brandrow{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.logo{height:34px;width:auto;filter:var(--logo-filter)}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:var(--warn-soft);color:var(--warn)}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.gradbar{height:4px;border-radius:4px;background:linear-gradient(90deg,var(--cyan),var(--blue));width:120px}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.fact{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.fact b{font-family:var(--f-display);font-size:17px}
+.fact span{color:var(--muted);font-size:14px}
+
+/* mac window mockups */
+.mock-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,500px),1fr));gap:28px}
+figure{margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+figcaption{font-size:14px;color:var(--muted)}
+figcaption b{color:var(--fg)}
+.win{border-radius:12px;overflow:hidden;border:1px solid var(--win-line);background:var(--win-bg);color:var(--win-fg);
+  font-family:var(--f-mac);font-size:13px;line-height:1.45;box-shadow:0 18px 40px -18px rgba(8,31,92,.35)}
+.bar{height:34px;background:var(--win-bar);border-bottom:1px solid var(--win-line);display:flex;align-items:center;gap:8px;padding:0 12px;position:relative}
+.dot{width:12px;height:12px;border-radius:50%}
+.d1{background:#FF5F57}.d2{background:#FEBC2E}.d3{background:#28C840}
+.bar .t{position:absolute;left:0;right:0;text-align:center;font-weight:600;font-size:13px;color:var(--win-muted);pointer-events:none}
+
+/* DMG finder window (deliberately fixed brand look, same in both themes) */
+.dmg{aspect-ratio:16/9.4;max-width:100%;position:relative;overflow:hidden;color:#fff;
+  background:radial-gradient(120% 90% at 85% 0%,#123C8F 0%,rgba(18,60,143,0) 60%),linear-gradient(160deg,#081F5C 0%,#05162B 75%)}
+.dmg .stripes{position:absolute;right:-40px;bottom:-30px;width:260px;opacity:.13}
+.dmg-inner{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:6% 7%;gap:6%}
+.dmg-left{display:flex;flex-direction:column;gap:10px;min-width:0}
+.dmg-left .k{font-family:var(--f-display);font-size:clamp(11px,1.5vw,13px);letter-spacing:.14em;text-transform:uppercase;color:#9EECFA;font-weight:700}
+.dmg-left .h{font-family:var(--f-display);font-weight:800;font-size:clamp(18px,3vw,30px);line-height:1.1}
+.dmg-left .s{font-size:clamp(11px,1.4vw,13px);color:#BFD3F2}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;font-weight:600;padding:3px 8px;border-radius:999px;background:rgba(158,236,250,.14);color:#CFF6FD;border:1px solid rgba(158,236,250,.3)}
+.dmg-icon{display:flex;flex-direction:column;align-items:center;gap:10px}
+.appicon{width:clamp(70px,13vw,116px);aspect-ratio:1;border-radius:24%;background:linear-gradient(150deg,#23BFFE,#2387F7 60%,#1B53E5);
+  box-shadow:0 14px 30px -10px rgba(35,191,254,.6),inset 0 1px 0 rgba(255,255,255,.35);display:grid;place-items:center}
+.appicon svg{width:58%;height:auto}
+.dmg-icon .lbl{font-size:12px;font-weight:600;background:rgba(35,135,247,.55);padding:2px 8px;border-radius:5px}
+.hint{font-size:11px;color:#9FB6DA;display:flex;align-items:center;gap:6px}
+
+/* installer app */
+.app{display:grid;grid-template-columns:170px 1fr;min-height:360px}
+.side{background:linear-gradient(170deg,#081F5C,#05162B);color:#D5E2F7;padding:18px 14px;display:flex;flex-direction:column;gap:18px}
+.side .brand{display:flex;align-items:center;gap:8px;font-weight:700;color:#fff;font-size:14px}
+.side .brand .mini{width:26px;height:26px;border-radius:7px;background:linear-gradient(150deg,#23BFFE,#2387F7);display:grid;place-items:center}
+.side .brand .mini svg{width:16px}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.steps li{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:7px;font-size:12.5px;color:#8FA6CC}
+.steps li .n{width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;display:grid;place-items:center;font-size:10px;font-weight:700;flex:none}
+.steps li.done{color:#9EECFA}.steps li.done .n{background:#9EECFA;color:#081F5C;border-color:#9EECFA}
+.steps li.cur{background:rgba(35,191,254,.16);color:#fff}.steps li.cur .n{border-color:#23BFFE;color:#23BFFE}
+.side .ver{margin-top:auto;font-size:11px;color:#6F86AE}
+.main{padding:22px 24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.main h4{margin:0;font-size:19px;font-weight:700}
+.main .sub{color:var(--win-muted);font-size:12.5px}
+.checks{display:flex;flex-direction:column;gap:7px;margin:0;padding:0;list-style:none}
+.checks li{display:flex;gap:9px;align-items:flex-start}
+.ic{width:16px;height:16px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:10px;font-weight:800;margin-top:1px}
+.ic.ok{background:#28C840;color:#fff}.ic.run{border:2px solid #2387F7;border-right-color:transparent}
+.ic.wait{border:1.5px solid var(--win-line)}.ic.info{background:#2387F7;color:#fff}
+.fields{display:grid;grid-template-columns:auto 1fr;gap:8px 12px;align-items:center}
+.fields label{font-size:12px;color:var(--win-muted);text-align:right;white-space:nowrap}
+.inp{background:var(--field);border:1px solid var(--win-line);border-radius:6px;padding:5px 9px;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.inp.focus{border-color:#2387F7;box-shadow:0 0 0 3px rgba(35,135,247,.25)}
+.btns{display:flex;justify-content:flex-end;gap:8px;margin-top:auto;flex-wrap:wrap}
+.btn{font-size:12.5px;font-weight:500;padding:5px 14px;border-radius:6px;border:1px solid var(--win-line);background:var(--win-bg);color:var(--win-fg)}
+.btn.pri{background:linear-gradient(180deg,#2E95FF,#2387F7);border-color:#1B76DB;color:#fff}
+.btn.danger{color:#D93025}
+.prog{height:6px;border-radius:6px;background:var(--field);overflow:hidden}
+.prog i{display:block;height:100%;width:58%;background:linear-gradient(90deg,#23BFFE,#2387F7)}
+.log{font-family:var(--f-mono);font-size:11px;background:var(--field);border:1px solid var(--win-line);border-radius:6px;padding:8px 10px;color:var(--win-muted);overflow-x:auto;white-space:pre}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tile{border:1px solid var(--win-line);border-radius:9px;padding:9px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile .v{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .l{font-size:11px;color:var(--win-muted)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:#1F9D55;background:rgba(40,200,64,.14);padding:3px 9px;border-radius:999px;width:max-content}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:#28C840}
+.ex{font-size:10.5px;color:var(--win-muted);font-style:italic}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:640px;font-size:14.5px}
+th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;background:var(--code-bg)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:600;white-space:nowrap}
+
+/* steps list */
+ol.pipe{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:0;counter-reset:s;max-width:820px}
+ol.pipe li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+ol.pipe li:last-child{border-bottom:0}
+ol.pipe li::before{content:counter(s);width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:800;display:grid;place-items:center;font-size:14px}
+ol.pipe li div{min-width:0;display:flex;flex-direction:column;gap:3px}
+ol.pipe li span{color:var(--muted);font-size:15px}
+
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card ul{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+.card ul b{color:var(--fg)}
+.tag{font-size:12px;font-weight:700;padding:3px 9px;border-radius:999px;width:max-content}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}.tag.warn{background:var(--warn-soft);color:var(--warn)}
+
+.qs{display:flex;flex-direction:column;gap:12px;max-width:820px}
+.q{display:grid;grid-template-columns:auto 1fr;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.q .qn{font-family:var(--f-mono);font-weight:500;color:var(--accent);font-size:14px;padding-top:2px}
+.q div{min-width:0;display:flex;flex-direction:column;gap:4px}
+.q span{color:var(--muted);font-size:15px}
+.approve{border-radius:14px;padding:24px;background:linear-gradient(135deg,var(--navy),var(--navy-deep));color:#E8EEF8;display:flex;flex-direction:column;gap:8px}
+.approve h2{color:#fff}
+.approve p{color:#BFD3F2;max-width:70ch}
+@media (max-width:560px){
+  .app{grid-template-columns:1fr}.side{flex-direction:row;flex-wrap:wrap;align-items:center;gap:10px}
+  .steps{flex-direction:row;flex-wrap:wrap}.side .ver{display:none}
+  .fields{grid-template-columns:1fr}.fields label{text-align:left}
+  .tiles{grid-template-columns:1fr 1fr 1fr}
+  .dmg-inner{grid-template-columns:1.2fr 1fr}
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="mark" viewBox="0 0 40 40">
+      <path d="M7 4h6l12 30h-6z" fill="#fff"/>
+      <path d="M16 4h6l12 30h-6z" fill="#fff" opacity=".85"/>
+      <path d="M3 17h7l2 5H5z" fill="#fff" opacity=".75"/>
+      <path d="M21 29h7l2 5h-7z" fill="#fff" opacity=".75"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+<header>
+  <div class="brandrow">
+    <img class="logo" alt="SafeSpace" src="data:image/png;base64,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">
+    <span class="pill">Plan · waiting for your approval</span>
+  </div>
+  <div class="gradbar"></div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div class="eyebrow">SafeCore 1.0.0 · macOS installer</div>
+    <h1>One DMG, one double-click, no Terminal</h1>
+    <p class="lede">Today a SafeCore box is set up by typing five <code>sudo</code> commands. The plan is to wrap all of them in a branded SafeCore app inside a universal DMG. The operator enters the five enrolment details in a form and approves one macOS password prompt. The app does the rest.</p>
+  </div>
+  <div class="facts">
+    <div class="fact"><b>SafeCore-1.0.0.dmg</b><span>Signed and notarized disk image. Runs on Apple silicon and Intel Macs.</span></div>
+    <div class="fact"><b>SafeCore.app</b><span>Installs, enrols and controls the box. The developer's .pkg is bundled inside the app.</span></div>
+    <div class="fact"><b>build-dmg.sh</b><span>One script that rebuilds the DMG when the developer sends a new version, e.g. 1.0.1.</span></div>
+  </div>
+</header>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Design · step 0</div>
+    <h2>What the operator sees when the DMG opens</h2>
+    <p>The window uses SafeSpace navy with the cyan-to-blue brand gradient from safespaceglobal.ai. There is nothing to drag. The app runs from the DMG and copies itself into Applications so it can be used later for start, stop and status.</p>
+  </div>
+  <figure>
+    <div class="win" style="max-width:820px">
+      <div class="bar"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="t">SafeCore 1.0.0</span></div>
+      <div class="dmg">
+        <svg class="stripes" viewBox="0 0 40 40"><use href="#mark"/></svg>
+        <div class="dmg-inner">
+          <div class="dmg-left">
+            <div class="k">SafeSpace · SafeCore</div>
+            <div class="h">Technology that helps save lives.</div>
+            <div class="s">Double-click <b>Install SafeCore</b> to install and enrol this box.</div>
+            <div class="chips"><span class="chip">Universal</span><span class="chip">Apple silicon</span><span class="chip">Intel</span><span class="chip">v1.0.0</span></div>
+          </div>
+          <div class="dmg-icon">
+            <div class="appicon"><svg viewBox="0 0 40 40"><use href="#mark"/></svg></div>
+            <span class="lbl">Install SafeCore</span>
+            <span class="hint">Double-click to open</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <figcaption><b>DMG window.</b> Fixed size of 660 × 400 points with a retina background image and the icon position locked. The app icon uses the SafeSpace mark on the brand gradient.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Design · steps 1–4</div>
+    <h2>The installer app, screen by screen</h2>
+    <p>This is a native SwiftUI window. It follows the Mac's light or dark appearance and keeps the navy SafeSpace sidebar in both. Values shown are examples.</p>
+  </div>
+  <div class="mock-grid">
+
+    <figure>
+      <div class="win">
+        <div class="bar"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="t">SafeCore</span></div>
+        <div class="app">
+          <aside class="side">
+            <div class="brand"><span class="mini"><svg viewBox="0 0 40 40"><use href="#mark"/></svg></span>SafeCore</div>
+            <ul class="steps"><li class="cur"><span class="n">1</span>Check this Mac</li><li><span class="n">2</span>Enrol box</li><li><span class="n">3</span>Install</li><li><span class="n">4</span>Running</li></ul>
+            <div class="ver">Version 1.0.0 · Universal</div>
+          </aside>
+          <div class="main">
+            <h4>Install SafeCore 1.0.0</h4>
+            <p class="sub">SafeCore runs SafeSpace's on-site detection services on this Mac.</p>
+            <ul class="checks">
+              <li><span class="ic ok">✓</span><span>macOS 14.6 or later</span></li>
+              <li><span class="ic ok">✓</span><span>Apple silicon (arm64), supported</span></li>
+              <li><span class="ic ok">✓</span><span>62 GB free on Macintosh HD</span></li>
+              <li><span class="ic info">i</span><span>No SafeCore found in /opt/safecore. This is a fresh install.</span></li>
+            </ul>
+            <span class="ex">Example values</span>
+            <div class="btns"><span class="btn">Quit</span><span class="btn pri">Continue</span></div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>1 · Check this Mac.</b> Checks the macOS version, chip type and free disk space, and looks for an existing install. If SafeCore is already installed, the screen says <i>Upgrade from 1.0.0</i> and step 2 is skipped because existing settings and data are kept.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="win">
+        <div class="bar"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="t">SafeCore</span></div>
+        <div class="app">
+          <aside class="side">
+            <div class="brand"><span class="mini"><svg viewBox="0 0 40 40"><use href="#mark"/></svg></span>SafeCore</div>
+            <ul class="steps"><li class="done"><span class="n">✓</span>Check this Mac</li><li class="cur"><span class="n">2</span>Enrol box</li><li><span class="n">3</span>Install</li><li><span class="n">4</span>Running</li></ul>
+            <div class="ver">Version 1.0.0 · Universal</div>
+          </aside>
+          <div class="main">
+            <h4>Enrol this box</h4>
+            <p class="sub">Enter the details from the SafeSpace portal. The access key is never saved on this Mac.</p>
+            <div class="fields">
+              <label>Config API endpoint</label><div class="inp">https://config.example-school.safespace</div>
+              <label>Tenant ID</label><div class="inp">tn_4821</div>
+              <label>Box ID</label><div class="inp">box-lincoln-hs-01</div>
+              <label>Domain</label><div class="inp">lincoln-hs.example.org</div>
+              <label>Access key</label><div class="inp focus">••••••••••••••••••••</div>
+            </div>
+            <span class="ex">Example values</span>
+            <div class="btns"><span class="btn">Back</span><span class="btn pri">Install &amp; Enrol</span></div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>2 · Enrol box.</b> The same five answers <code>safecore-setup</code> asks for. Each field is checked before you can continue: the endpoint must be a URL and none can be empty. Pressing <i>Install &amp; Enrol</i> opens one standard macOS administrator prompt, which accepts Touch ID or a password.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="win">
+        <div class="bar"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="t">SafeCore</span></div>
+        <div class="app">
+          <aside class="side">
+            <div class="brand"><span class="mini"><svg viewBox="0 0 40 40"><use href="#mark"/></svg></span>SafeCore</div>
+            <ul class="steps"><li class="done"><span class="n">✓</span>Check this Mac</li><li class="done"><span class="n">✓</span>Enrol box</li><li class="cur"><span class="n">3</span>Install</li><li><span class="n">4</span>Running</li></ul>
+            <div class="ver">Version 1.0.0 · Universal</div>
+          </aside>
+          <div class="main">
+            <h4>Installing SafeCore…</h4>
+            <div class="prog"><i></i></div>
+            <ul class="checks">
+              <li><span class="ic ok">✓</span><span>Installed package into /opt/safecore</span></li>
+              <li><span class="ic ok">✓</span><span>Enrolled box with SafeSpace</span></li>
+              <li><span class="ic run"></span><span>Setting up the database</span></li>
+              <li><span class="ic wait"></span><span>Starting services and loading models</span></li>
+              <li><span class="ic wait"></span><span>Checking that everything is running</span></li>
+            </ul>
+            <div class="log">safecore-setup: database initialised (postgres)
+safecore-setup: access key  [hidden]</div>
+            <div class="btns"><span class="btn">Hide details</span></div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>3 · Install.</b> Runs the developer's commands in order and shows live output. The access key is hidden in the output and the log file. If a step fails, the app names the step and offers <i>Retry</i> or <i>Save log</i>.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="win">
+        <div class="bar"><span class="dot d1"></span><span class="dot d2"></span><span class="dot d3"></span><span class="t">SafeCore</span></div>
+        <div class="app">
+          <aside class="side">
+            <div class="brand"><span class="mini"><svg viewBox="0 0 40 40"><use href="#mark"/></svg></span>SafeCore</div>
+            <ul class="steps"><li class="done"><span class="n">✓</span>Check this Mac</li><li class="done"><span class="n">✓</span>Enrol box</li><li class="done"><span class="n">✓</span>Install</li><li class="cur"><span class="n">4</span>Running</li></ul>
+            <div class="ver">Version 1.0.0 · Universal</div>
+          </aside>
+          <div class="main">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h4>SafeCore is running</h4><span class="live">Live</span></div>
+            <p class="sub">box-lincoln-hs-01 · status checked 09:42</p>
+            <div class="tiles">
+              <div class="tile"><span class="v">8 / 8</span><span class="l">Services running</span></div>
+              <div class="tile"><span class="v">3</span><span class="l">Weapon models loaded</span></div>
+              <div class="tile"><span class="v">12 / 14</span><span class="l">Cameras live / configured</span></div>
+            </div>
+            <span class="ex">Example values</span>
+            <div class="btns"><span class="btn">Refresh</span><span class="btn">Restart</span><span class="btn danger">Stop</span></div>
+          </div>
+        </div>
+      </div>
+      <figcaption><b>4 · Running (also the control panel).</b> When you open SafeCore from Applications later, it starts on this screen. The Refresh, Start, Stop and Restart buttons replace the <code>safecorectl</code> commands. Stop asks for confirmation first because nothing restarts until it is started again or the Mac reboots.</figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Where the commands go</div>
+    <h2>Every command your developer sent, mapped to a button</h2>
+    <p>The commands run exactly as the developer wrote them, as root, through one privileged helper. Nobody types them.</p>
+  </div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>In the app</th><th>Command it runs</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>Install &amp; Enrol (step 3)</td><td><code>installer -pkg …/SafeCore.app/Contents/Resources/SafeCore-1.0.0.pkg -target /</code></td><td>The .pkg ships inside the app, so the ~/Downloads path is no longer needed.</td></tr>
+        <tr><td>Install &amp; Enrol (step 3)</td><td><code>/opt/safecore/WebSocket/safecored/target/release/safecore-setup</code></td><td>The five form answers are passed in through standard input, never on the command line where other processes could see them. Skipped on upgrade.</td></tr>
+        <tr><td>Refresh / status tiles</td><td><code>/opt/safecore/scripts/safecorectl status</code></td><td>The output is read into the three tiles. The raw text is under <i>Show details</i>.</td></tr>
+        <tr><td>Stop</td><td><code>/opt/safecore/scripts/safecorectl stop</code></td><td>Asks for confirmation first.</td></tr>
+        <tr><td>Start</td><td><code>/opt/safecore/scripts/safecorectl start</code></td><td>Appears in place of Stop when services are down.</td></tr>
+        <tr><td>Restart</td><td><code>/opt/safecore/scripts/safecorectl restart</code></td><td>Runs automatically at the end of an upgrade.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Universal</div>
+    <h2>What “universal” means here, and the one risk</h2>
+  </div>
+  <div class="two">
+    <div class="card">
+      <span class="tag ok">In my control</span>
+      <h3>The DMG and the SafeCore app</h3>
+      <ul>
+        <li>Built with <b>arm64 + x86_64</b> slices, so one file runs natively on Apple silicon and Intel.</li>
+        <li>Signed with Developer ID and the hardened runtime, then <b>notarized and stapled</b>, so Gatekeeper opens it with no warnings, even offline.</li>
+        <li>Minimum macOS version to be confirmed (question 5 below).</li>
+      </ul>
+    </div>
+    <div class="card">
+      <span class="tag warn">Depends on the developer</span>
+      <h3>The SafeCore binaries inside the .pkg</h3>
+      <ul>
+        <li><code>safecored</code> and <code>safecore-setup</code> are Rust builds from <code>target/release</code>, which usually produces <b>one architecture only</b>.</li>
+        <li>The first build step lists the architectures of every binary in the package with <code>lipo -archs</code>.</li>
+        <li>If they are arm64 only, Intel Macs cannot run them because Rosetta only translates in the other direction. The fix is for the developer to also build <code>x86_64-apple-darwin</code> and merge the two builds with <code>lipo</code>. Until then, the app tells Intel users that their Mac is not supported yet and stops before installing anything.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Build pipeline</div>
+    <h2>How the DMG gets made, in order</h2>
+  </div>
+  <ol class="pipe">
+    <li><div><b>Fetch and verify the package</b><span>Get SafeCore-1.0.0.zip from Bitbucket, unzip it into an isolated folder and record its SHA-256 checksum.</span></div></li>
+    <li><div><b>Inspect the .pkg</b><span>Expand the package with <code>pkgutil --expand-full</code>, read its install scripts, and check the architectures of every binary.</span></div></li>
+    <li><div><b>Build SafeCore.app</b><span>SwiftUI app plus a small privileged helper that runs only the six commands in the table above. It is built universal with Xcode.</span></div></li>
+    <li><div><b>Bundle and sign</b><span>Place the .pkg in the app's Resources folder, then code-sign the helper and the app with a Developer ID Application certificate.</span></div></li>
+    <li><div><b>Make the branded DMG</b><span>Add the background artwork from the mockup, the window size and the icon position, then compress the image (UDZO format).</span></div></li>
+    <li><div><b>Notarize and staple</b><span>Submit with <code>xcrun notarytool submit --wait</code>, then staple the ticket to the DMG.</span></div></li>
+    <li><div><b>Test</b><span>Run a fresh install and an upgrade on Apple silicon, an install on Intel (or check that the refusal message appears), a wrong access key, and all four control buttons.</span></div></li>
+  </ol>
+  <p class="col" style="color:var(--muted)">All seven steps are wrapped in <code>build-dmg.sh</code>. For a new release, you point it at the new zip and get a new signed DMG.</p>
+</section>
+
+<section>
+  <div class="sec-head">
+    <div class="eyebrow">Before I start</div>
+    <h2>Six things I need from you or the developer</h2>
+  </div>
+  <div class="qs">
+    <div class="q"><span class="qn">01</span><div><b>Access to the package</b><span>The Bitbucket link returns “401 unauthorised” without a login. Download the zip into the SafeCore-v1 folder, or share a Bitbucket app password.</span></div></div>
+    <div class="q"><span class="qn">02</span><div><b>Can safecore-setup run without prompts?</b><span>Ask the developer whether it accepts flags or environment variables, for example <code>--tenant-id</code>. If not, I need the exact order of its prompts and any yes/no confirmations it asks.</span></div></div>
+    <div class="q"><span class="qn">03</span><div><b>Apple Developer account</b><span>Signing and notarizing need a Developer ID Application certificate and an App Store Connect API key. Without them, macOS will warn that the app “cannot be opened” on every box.</span></div></div>
+    <div class="q"><span class="qn">04</span><div><b>Intel support</b><span>Should Intel Macs be supported now? If yes, the developer needs to send x86_64 builds, or I can merge them if they send both.</span></div></div>
+    <div class="q"><span class="qn">05</span><div><b>Minimum macOS and defaults</b><span>The lowest macOS version the boxes run, and whether the config API endpoint and domain should come pre-filled.</span></div></div>
+    <div class="q"><span class="qn">06</span><div><b>Status output format</b><span>A sample of <code>safecorectl status</code> output, so the tiles show the right numbers for services, models and cameras.</span></div></div>
+  </div>
+</section>
+
+<div class="approve">
+  <h2>Ready when you are</h2>
+  <p>Reply “go ahead”, along with any changes to the screens and answers to the six questions. Questions 1 and 2 block the build. I can start on the app and the DMG artwork while the others are pending.</p>
+</div>
+
+</div>
