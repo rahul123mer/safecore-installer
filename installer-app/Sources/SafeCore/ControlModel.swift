@@ -49,6 +49,7 @@ final class ControlModel: ObservableObject {
 
     @Published var core: [ServiceRow] = []
     @Published var services: [ServiceRow] = []
+    @Published var cameraRows: [ServiceRow] = []
     @Published var overall: (title: String, health: ServiceHealth) = ("Checking…", .starting)
     @Published var models: String = "—"
     @Published var cameras: String = "—"
@@ -159,13 +160,34 @@ final class ControlModel: ObservableObject {
         if let log = try? String(contentsOfFile: "\(Self.root)/logs/services/weapon_pipeline.log", encoding: .utf8) {
             models = "\(log.components(separatedBy: "opened by safecored").count - 1)/3"
         }
+        // Cameras: the enabled rows of LiveCameraFeeds (the list the streaming service reads),
+        // live when the camera's HLS playlist was written in the last minute.
+        let pgPort = pg.flatMap { Self.portArgument(in: $0.command) } ?? 5432
+        let feeds = pg == nil ? nil : await Self.cameraFeeds(port: pgPort)
         let hls = "\(Self.root)/data/hls"
-        if let cams = try? FileManager.default.contentsOfDirectory(atPath: hls) {
-            let live = cams.filter { cam in
-                let m = (try? FileManager.default.attributesOfItem(atPath: "\(hls)/\(cam)/index.m3u8"))?[.modificationDate] as? Date
-                return m.map { Date().timeIntervalSince($0) < 60 } ?? false
-            }.count
-            cameras = "\(live)/\(cams.count)"
+        func isLive(_ folder: String) -> Bool {
+            let m = (try? FileManager.default.attributesOfItem(atPath: "\(hls)/\(folder)/index.m3u8"))?[.modificationDate] as? Date
+            return m.map { Date().timeIntervalSince($0) < 60 } ?? false
+        }
+        let folders = ((try? FileManager.default.contentsOfDirectory(atPath: hls)) ?? []).filter { !$0.hasPrefix(".") }
+        if let feeds {
+            // Folders are expected to be named by camera_id. If none match, live state per camera is unknown.
+            let perCamera = folders.isEmpty || feeds.contains { folders.contains($0.id) }
+            cameraRows = feeds.map { feed in
+                let live = perCamera && isLive(feed.id)
+                return ServiceRow(key: "camera:\(feed.id)", title: feed.name.isEmpty ? feed.id : feed.name,
+                                  detail: "Camera \(feed.id). Live means its video playlist was updated in the last minute.",
+                                  health: !perCamera ? .starting : live ? .online : (stoppedByUser ? .stopped : .offline),
+                                  note: !perCamera ? "Live state not available per camera" : live ? "Streaming" : "No video in the last minute",
+                                  logPath: "\(Self.root)/logs/services/rtsp_csv_win.log")
+            }
+            let liveCount = perCamera ? cameraRows.filter { $0.health == .online }.count
+                                      : min(folders.filter(isLive).count, feeds.count)
+            cameras = "\(liveCount)/\(feeds.count)"
+        } else {
+            // Database not reachable: fall back to the camera folders, skipping hidden files.
+            cameraRows = []
+            cameras = folders.isEmpty ? "—" : "\(folders.filter(isLive).count)/\(folders.count)"
         }
 
         let all = core + services
@@ -230,6 +252,40 @@ final class ControlModel: ObservableObject {
         }
     }
 
+    /// The value after `-p` in the postgres command line (launchd expands SAFECORE_PG_PORT there).
+    static func portArgument(in command: String) -> Int? {
+        let parts = command.split(separator: " ")
+        guard let i = parts.firstIndex(of: "-p"), i + 1 < parts.count else { return nil }
+        return Int(parts[i + 1])
+    }
+
+    struct CameraFeed { let id: String; let name: String }
+
+    /// Enabled cameras from the box database (local trust auth, read-only query).
+    static func cameraFeeds(port: Int) async -> [CameraFeed]? {
+        await Task.detached { () -> [CameraFeed]? in
+            let p = Process()
+            p.executableURL = URL(fileURLWithPath: "\(SafeCoreInstall.root)/pgsql/bin/psql")
+            p.arguments = ["-h", "127.0.0.1", "-p", String(port), "-U", "aibox_user", "-d", "aibox_ingestor",
+                           "-X", "-q", "-t", "-A", "-F", "\t", "-c",
+                           "SELECT l.camera_id, COALESCE(c.camera_name, '') FROM livecamerafeeds l "
+                           + "LEFT JOIN cameras c USING (camera_id) WHERE l.enabled = 1 ORDER BY 2, 1"]
+            p.environment = ["PGCONNECT_TIMEOUT": "2", "LANG": "en_US.UTF-8", "LC_ALL": "en_US.UTF-8"]
+            let out = Pipe()
+            p.standardOutput = out
+            p.standardError = Pipe()
+            guard (try? p.run()) != nil else { return nil }
+            let data = out.fileHandleForReading.readDataToEndOfFile()
+            p.waitUntilExit()
+            guard p.terminationStatus == 0 else { return nil }
+            return String(decoding: data, as: UTF8.self).split(separator: "\n").compactMap { line in
+                let f = line.split(separator: "\t", maxSplits: 1, omittingEmptySubsequences: false).map(String.init)
+                guard let id = f.first, !id.isEmpty else { return nil }
+                return CameraFeed(id: id, name: f.count > 1 ? f[1] : "")
+            }
+        }.value
+    }
+
     /// Names the health uploader reports as running (ready), or nil if it is not answering.
     static func healthReport() async -> Set<String>? {
         guard let url = URL(string: "http://127.0.0.1:8013/stats/server") else { return nil }
@@ -243,7 +299,7 @@ final class ControlModel: ObservableObject {
     }
 
     func loadLog(for key: String) {
-        guard let row = (core + services).first(where: { $0.key == key }), let path = row.logPath else { logText = ""; return }
+        guard let row = (core + services + cameraRows).first(where: { $0.key == key }), let path = row.logPath else { logText = ""; return }
         guard let handle = FileHandle(forReadingAtPath: path) else {
             logText = "Log not readable: \(path)"
             return

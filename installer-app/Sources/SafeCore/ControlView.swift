@@ -100,6 +100,11 @@ struct ControlView: View {
                 }
                 ForEach(model.services) { row in ServiceRowView(row: row).tag(row.key) }
             }
+            if !model.cameraRows.isEmpty {
+                Section("Cameras (\(model.cameraRows.filter { $0.health == .online }.count) of \(model.cameraRows.count) live)") {
+                    ForEach(model.cameraRows) { row in ServiceRowView(row: row).tag(row.key) }
+                }
+            }
         }
         .listStyle(.inset(alternatesRowBackgrounds: false))
     }
@@ -107,7 +112,7 @@ struct ControlView: View {
     // MARK: Details
 
     @ViewBuilder private var detailPane: some View {
-        if let key = model.selected, let row = (model.core + model.services).first(where: { $0.key == key }) {
+        if let key = model.selected, let row = (model.core + model.services + model.cameraRows).first(where: { $0.key == key }) {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
                     Text(row.title).font(.system(size: 18, weight: .bold))
