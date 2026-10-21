@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct RootView: View {
+struct InstallerView: View {
     @EnvironmentObject var state: AppState
 
     var body: some View {
@@ -11,7 +11,7 @@ struct RootView: View {
                 case .check: CheckView()
                 case .enrol: EnrolView()
                 case .install: InstallView()
-                case .running: RunningView()
+                case .done: SuccessView()
                 }
             }
             .padding(.horizontal, 28)
@@ -109,7 +109,7 @@ struct CheckView: View {
         HStack {
             Spacer()
             Button("Quit") { NSApp.terminate(nil) }
-            Button(state.isUpgrade ? "Upgrade" : "Continue") { state.continueFromChecks() }
+            Button(state.continueTitle) { state.continueFromChecks() }
                 .buttonStyle(PrimaryButtonStyle())
                 .keyboardShortcut(.defaultAction)
                 .disabled(!state.canContinue)
@@ -214,92 +214,35 @@ struct InstallView: View {
     }
 }
 
-// MARK: - Step 4 / control panel
+// MARK: - Step 4
 
-struct RunningView: View {
+struct SuccessView: View {
     @EnvironmentObject var state: AppState
-    @State private var showRaw = false
 
     var body: some View {
-        HStack {
-            Text(headline).font(.system(size: 22, weight: .bold))
-            Spacer()
-            if !state.statusText.isEmpty {
-                Text(state.status.allRunning ? "Live" : "Check")
-                    .font(.system(size: 12, weight: .semibold))
-                    .padding(.horizontal, 10).padding(.vertical, 3)
-                    .background(Capsule().fill((state.status.allRunning ? Color.green : Color.orange).opacity(0.16)))
-                    .foregroundStyle(state.status.allRunning ? Color.green : Color.orange)
+        Spacer()
+        VStack(spacing: 14) {
+            ZStack {
+                Circle().fill(Color.green.opacity(0.14)).frame(width: 84, height: 84)
+                Image(systemName: "checkmark.circle.fill").font(.system(size: 52)).foregroundStyle(.green)
             }
-        }
-        if let t = state.statusTime {
-            Text("Status checked \(t.formatted(date: .omitted, time: .shortened))").foregroundStyle(.secondary).font(.system(size: 12))
-        }
-        HStack(spacing: 10) {
-            Tile(value: pair(state.status.servicesRunning, state.status.servicesTotal), label: "Services running")
-            Tile(value: pair(state.status.models, state.status.modelsTotal), label: "Weapon models opened")
-            Tile(value: pair(state.status.camerasLive, state.status.camerasConfigured), label: "Cameras live / configured")
-        }
-        if state.status.servicesStarting > 0 {
-            Text("\(state.status.servicesStarting) service(s) still starting. Press Refresh in a minute.")
+            Text(state.isUpgrade ? "SafeCore was successfully upgraded" : "SafeCore was successfully installed")
+                .font(.system(size: 22, weight: .bold))
+            Text(state.isUpgrade
+                 ? "Version \(state.version) is installed. Your enrolment, settings and data were kept."
+                 : "Version \(state.version) is installed and this box is enrolled. Services are starting.")
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Label("Auto-restart is on. Services that stop on their own are restarted automatically.", systemImage: "arrow.triangle.2.circlepath")
                 .font(.system(size: 12)).foregroundStyle(.secondary)
         }
-        if !state.status.daemonsDown.isEmpty {
-            Label("Stopped: \(state.status.daemonsDown.joined(separator: ", ")). Press Start.", systemImage: "exclamationmark.triangle.fill")
-                .font(.system(size: 12)).foregroundStyle(.orange)
-        }
-        if let err = state.errorMessage {
-            Label(err, systemImage: "exclamationmark.triangle.fill").foregroundStyle(.red).font(.system(size: 12))
-        }
-        if showRaw {
-            ScrollView {
-                Text(state.statusText.isEmpty ? "No status yet." : state.statusText)
-                    .font(.system(size: 11, design: .monospaced)).textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading).padding(8)
-            }
-            .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
-            .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(Color(nsColor: .separatorColor)))
-        }
-        Spacer(minLength: 0)
+        .frame(maxWidth: .infinity)
+        Spacer()
         HStack {
-            Button(showRaw ? "Hide details" : "Show details") { showRaw.toggle() }
-            if state.busy { ProgressView().controlSize(.small).padding(.leading, 6) }
             Spacer()
-            Button("Refresh") { Task { await state.refreshStatus() } }
-            Button("Start") { Task { await state.control("start") } }
-            Button("Restart") { Task { await state.control("restart") } }
-            Button("Stop", role: .destructive) { state.confirmStop = true }
+            Button("OK") { state.finish() }
+                .buttonStyle(PrimaryButtonStyle())
+                .keyboardShortcut(.defaultAction)
         }
-        .disabled(state.busy)
-        .confirmationDialog("Stop SafeCore?", isPresented: $state.confirmStop) {
-            Button("Stop everything", role: .destructive) { Task { await state.control("stop") } }
-        } message: {
-            Text("This stops all services, safecored and the database. Nothing restarts until you press Start or the Mac reboots.")
-        }
-    }
-
-    private var headline: String {
-        if state.statusText.isEmpty { return "SafeCore" }
-        return state.status.allRunning ? "SafeCore is running" : "SafeCore status"
-    }
-
-    private func pair(_ a: Int?, _ b: Int?) -> String {
-        guard let a else { return "—" }
-        return b.map { "\(a) / \($0)" } ?? "\(a)"
-    }
-}
-
-struct Tile: View {
-    let value: String
-    let label: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(value).font(.system(size: 22, weight: .bold)).monospacedDigit()
-            Text(label).font(.system(size: 11)).foregroundStyle(.secondary)
-        }
-        .padding(12)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .overlay(RoundedRectangle(cornerRadius: 9).strokeBorder(Color(nsColor: .separatorColor)))
     }
 }

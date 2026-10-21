@@ -142,6 +142,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>SafeCoreDefaultEndpoint</key><string>$ENDPOINT</string>
   <key>SafeCoreDefaultDomain</key><string>$DOMAIN</string>
   <key>SafeCorePackageSHA256</key><string>$SHA</string>
+  <key>NSAppTransportSecurity</key><dict><key>NSAllowsLocalNetworking</key><true/></dict>
 </dict>
 </plist>
 PLIST
@@ -151,8 +152,9 @@ plutil -lint "$APP/Contents/Info.plist" >/dev/null
 say "4/7 Bundling the package"
 cp "$PKG" "$APP/Contents/Resources/SafeCore.pkg"
 cp "$ROOT/installer-app/Resources/safecore-helper.sh" "$APP/Contents/Resources/"
+cp "$ROOT/installer-app/Resources/safecore-watchdog.sh" "$ROOT/installer-app/Resources/ai.safespaceglobal.safecore-watchdog.plist" "$APP/Contents/Resources/"
 cp "$ROOT/brand/safespace-mark.png" "$APP/Contents/Resources/"
-chmod 755 "$APP/Contents/Resources/safecore-helper.sh"
+chmod 755 "$APP/Contents/Resources/safecore-helper.sh" "$APP/Contents/Resources/safecore-watchdog.sh"
 codesign --force --sign - "$APP"
 lipo -archs "$APP/Contents/MacOS/SafeCore"
 

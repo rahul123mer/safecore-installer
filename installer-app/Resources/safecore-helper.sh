@@ -9,6 +9,7 @@
 # Usage:
 #   safecore-helper.sh install <pkg> <workdir> <fresh|upgrade> [app-to-copy]
 #   safecore-helper.sh status|start|stop|restart
+#   safecore-helper.sh watchdog-on|watchdog-off   (auto-restart; see safecore-watchdog.sh)
 #
 # <workdir> is a private (0700) folder created by the app. For a fresh install it
 # holds "answers": endpoint, tenant ID, box ID, domain and access key, one per line.
@@ -37,6 +38,24 @@ cd /
 mkdir -p "$LOG_DIR"
 chmod 755 "$LOG_DIR"
 
+HERE="$(cd "$(dirname "$0")" && pwd)"
+SUPPORT="/Library/Application Support/SafeCore"
+WD_LABEL=ai.safespaceglobal.safecore-watchdog
+WD_PLIST=/Library/LaunchDaemons/$WD_LABEL.plist
+
+# Install (or refresh) the auto-restart watchdog from this app's Resources. $1: 1 = on, 0 = off.
+install_watchdog() {
+  mkdir -p "$SUPPORT"
+  chown root:wheel "$SUPPORT"; chmod 755 "$SUPPORT"
+  install -o root -g wheel -m 755 "$HERE/safecore-watchdog.sh" "$SUPPORT/safecore-watchdog.sh" || return 1
+  echo "ENABLED=$1" > "$SUPPORT/watchdog.conf"; chmod 644 "$SUPPORT/watchdog.conf"
+  install -o root -g wheel -m 644 "$HERE/$WD_LABEL.plist" "$WD_PLIST" || return 1
+  launchctl bootout system "$WD_PLIST" 2>/dev/null || true
+  launchctl bootstrap system "$WD_PLIST" && launchctl enable "system/$WD_LABEL"
+  echo "[$(date '+%F %T')] auto-restart $([ "$1" = 1 ] && echo on || echo off)" >> "$LOG"
+  echo "Auto-restart is $([ "$1" = 1 ] && echo on || echo off)."
+}
+
 CMD=${1:-}
 [ $# -gt 0 ] && shift
 
@@ -56,8 +75,12 @@ case "$CMD" in
     fi
     exit $rc
     ;;
+  watchdog-on|watchdog-off)
+    install_watchdog "$([ "$CMD" = watchdog-on ] && echo 1 || echo 0)"
+    exit $?
+    ;;
   install) ;;
-  *) echo "usage: $0 install|status|start|stop|restart" >&2; exit 64 ;;
+  *) echo "usage: $0 install|status|start|stop|restart|watchdog-on|watchdog-off" >&2; exit 64 ;;
 esac
 
 PKG=${1:?pkg}
@@ -128,7 +151,14 @@ if [ -n "$APP_SRC" ] && [ -d "$APP_SRC" ] && [ "$APP_SRC" != /Applications/SafeC
   /usr/bin/ditto "$APP_SRC" /Applications/SafeCore.app 2>&1 | emit
 fi
 
-# 4. Check that everything is running.
+# 4. Turn on auto-restart (keeps the box's previous on/off choice on upgrade).
+step watchdog run
+WD_ON=1
+[ -f "$SUPPORT/watchdog.conf" ] && WD_ON=$(sed -n 's/^ENABLED=//p' "$SUPPORT/watchdog.conf")
+install_watchdog "${WD_ON:-1}" 2>&1 | emit || fail watchdog
+step watchdog ok
+
+# 5. Check that everything is running.
 step verify run
 "$CTL" status 2>&1 | emit
 step verify ok

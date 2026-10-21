@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- SafeCore auto-restart watchdog, installed by the SafeCore app. -->
+  <key>Label</key>             <string>ai.safespaceglobal.safecore-watchdog</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>/Library/Application Support/SafeCore/safecore-watchdog.sh</string>
+  </array>
+  <key>RunAtLoad</key>         <true/>
+  <key>StartInterval</key>     <integer>30</integer>
+  <key>StandardOutPath</key>   <string>/Library/Logs/SafeCore/watchdog.out.log</string>
+  <key>StandardErrorPath</key> <string>/Library/Logs/SafeCore/watchdog.out.log</string>
+</dict>
+</plist>
